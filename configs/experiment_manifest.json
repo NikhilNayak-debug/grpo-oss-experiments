@@ -1,0 +1,288 @@
+{
+  "experiments": [
+    {
+      "experiment_id": "bfcl__prompt",
+      "dataset": "bfcl",
+      "method": "prompt",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/bfcl_3000.jsonl",
+      "total_rows": 3000,
+      "usable_rows": 240,
+      "dropped_rows": 2760,
+      "required_fields": [
+        "function",
+        "ground_truth"
+      ],
+      "notes": "Keep only rows with non-empty function schemas and ground-truth calls.",
+      "objective": "Prompt-only baseline with no parameter updates.",
+      "uses_updates": false,
+      "uses_reward": false
+    },
+    {
+      "experiment_id": "bfcl__sft",
+      "dataset": "bfcl",
+      "method": "sft",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/bfcl_3000.jsonl",
+      "total_rows": 3000,
+      "usable_rows": 240,
+      "dropped_rows": 2760,
+      "required_fields": [
+        "function",
+        "ground_truth"
+      ],
+      "notes": "Keep only rows with non-empty function schemas and ground-truth calls.",
+      "objective": "Supervised fine-tuning on filtered benchmark rows.",
+      "uses_updates": true,
+      "uses_reward": false
+    },
+    {
+      "experiment_id": "bfcl__best_of_n",
+      "dataset": "bfcl",
+      "method": "best_of_n",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/bfcl_3000.jsonl",
+      "total_rows": 3000,
+      "usable_rows": 240,
+      "dropped_rows": 2760,
+      "required_fields": [
+        "function",
+        "ground_truth"
+      ],
+      "notes": "Keep only rows with non-empty function schemas and ground-truth calls.",
+      "objective": "Inference-time sampling with verifier- or reward-based reranking.",
+      "uses_updates": false,
+      "uses_reward": true
+    },
+    {
+      "experiment_id": "bfcl__grpo",
+      "dataset": "bfcl",
+      "method": "grpo",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/bfcl_3000.jsonl",
+      "total_rows": 3000,
+      "usable_rows": 240,
+      "dropped_rows": 2760,
+      "required_fields": [
+        "function",
+        "ground_truth"
+      ],
+      "notes": "Keep only rows with non-empty function schemas and ground-truth calls.",
+      "objective": "Group Relative Policy Optimization with verifier- or reward-scored samples.",
+      "uses_updates": true,
+      "uses_reward": true
+    },
+    {
+      "experiment_id": "ifeval__prompt",
+      "dataset": "ifeval",
+      "method": "prompt",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/ifeval_samples.jsonl",
+      "total_rows": 541,
+      "usable_rows": 541,
+      "dropped_rows": 0,
+      "required_fields": [
+        "prompt"
+      ],
+      "notes": "Keep only rows with non-empty prompts. SFT is unsupported from this local file because there are no reference completions.",
+      "objective": "Prompt-only baseline with no parameter updates.",
+      "uses_updates": false,
+      "uses_reward": false
+    },
+    {
+      "experiment_id": "ifeval__sft",
+      "dataset": "ifeval",
+      "method": "sft",
+      "supported": false,
+      "source_path": "/home/nikhil/bench/OSS-datasets/ifeval_samples.jsonl",
+      "total_rows": 541,
+      "usable_rows": 541,
+      "dropped_rows": 0,
+      "required_fields": [
+        "prompt"
+      ],
+      "notes": "Keep only rows with non-empty prompts. SFT is unsupported from this local file because there are no reference completions.",
+      "objective": "Supervised fine-tuning on filtered benchmark rows.",
+      "uses_updates": true,
+      "uses_reward": false
+    },
+    {
+      "experiment_id": "ifeval__best_of_n",
+      "dataset": "ifeval",
+      "method": "best_of_n",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/ifeval_samples.jsonl",
+      "total_rows": 541,
+      "usable_rows": 541,
+      "dropped_rows": 0,
+      "required_fields": [
+        "prompt"
+      ],
+      "notes": "Keep only rows with non-empty prompts. SFT is unsupported from this local file because there are no reference completions.",
+      "objective": "Inference-time sampling with verifier- or reward-based reranking.",
+      "uses_updates": false,
+      "uses_reward": true
+    },
+    {
+      "experiment_id": "ifeval__grpo",
+      "dataset": "ifeval",
+      "method": "grpo",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/ifeval_samples.jsonl",
+      "total_rows": 541,
+      "usable_rows": 541,
+      "dropped_rows": 0,
+      "required_fields": [
+        "prompt"
+      ],
+      "notes": "Keep only rows with non-empty prompts. SFT is unsupported from this local file because there are no reference completions.",
+      "objective": "Group Relative Policy Optimization with verifier- or reward-scored samples.",
+      "uses_updates": true,
+      "uses_reward": true
+    },
+    {
+      "experiment_id": "jailbreakbench__prompt",
+      "dataset": "jailbreakbench",
+      "method": "prompt",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/jailbreakbench_samples.jsonl",
+      "total_rows": 200,
+      "usable_rows": 200,
+      "dropped_rows": 0,
+      "required_fields": [
+        "goal",
+        "target"
+      ],
+      "notes": "Keep only rows with non-empty attack goals and unsafe target strings. SFT is unsupported because the provided targets are harmful exemplars, not desired safe responses.",
+      "objective": "Prompt-only baseline with no parameter updates.",
+      "uses_updates": false,
+      "uses_reward": false
+    },
+    {
+      "experiment_id": "jailbreakbench__sft",
+      "dataset": "jailbreakbench",
+      "method": "sft",
+      "supported": false,
+      "source_path": "/home/nikhil/bench/OSS-datasets/jailbreakbench_samples.jsonl",
+      "total_rows": 200,
+      "usable_rows": 200,
+      "dropped_rows": 0,
+      "required_fields": [
+        "goal",
+        "target"
+      ],
+      "notes": "Keep only rows with non-empty attack goals and unsafe target strings. SFT is unsupported because the provided targets are harmful exemplars, not desired safe responses.",
+      "objective": "Supervised fine-tuning on filtered benchmark rows.",
+      "uses_updates": true,
+      "uses_reward": false
+    },
+    {
+      "experiment_id": "jailbreakbench__best_of_n",
+      "dataset": "jailbreakbench",
+      "method": "best_of_n",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/jailbreakbench_samples.jsonl",
+      "total_rows": 200,
+      "usable_rows": 200,
+      "dropped_rows": 0,
+      "required_fields": [
+        "goal",
+        "target"
+      ],
+      "notes": "Keep only rows with non-empty attack goals and unsafe target strings. SFT is unsupported because the provided targets are harmful exemplars, not desired safe responses.",
+      "objective": "Inference-time sampling with verifier- or reward-based reranking.",
+      "uses_updates": false,
+      "uses_reward": true
+    },
+    {
+      "experiment_id": "jailbreakbench__grpo",
+      "dataset": "jailbreakbench",
+      "method": "grpo",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/jailbreakbench_samples.jsonl",
+      "total_rows": 200,
+      "usable_rows": 200,
+      "dropped_rows": 0,
+      "required_fields": [
+        "goal",
+        "target"
+      ],
+      "notes": "Keep only rows with non-empty attack goals and unsafe target strings. SFT is unsupported because the provided targets are harmful exemplars, not desired safe responses.",
+      "objective": "Group Relative Policy Optimization with verifier- or reward-scored samples.",
+      "uses_updates": true,
+      "uses_reward": true
+    },
+    {
+      "experiment_id": "samsum__prompt",
+      "dataset": "samsum",
+      "method": "prompt",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/samsum_3000.jsonl",
+      "total_rows": 3000,
+      "usable_rows": 3000,
+      "dropped_rows": 0,
+      "required_fields": [
+        "dialogue",
+        "summary"
+      ],
+      "notes": "Keep only rows with non-empty dialogues and reference summaries.",
+      "objective": "Prompt-only baseline with no parameter updates.",
+      "uses_updates": false,
+      "uses_reward": false
+    },
+    {
+      "experiment_id": "samsum__sft",
+      "dataset": "samsum",
+      "method": "sft",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/samsum_3000.jsonl",
+      "total_rows": 3000,
+      "usable_rows": 3000,
+      "dropped_rows": 0,
+      "required_fields": [
+        "dialogue",
+        "summary"
+      ],
+      "notes": "Keep only rows with non-empty dialogues and reference summaries.",
+      "objective": "Supervised fine-tuning on filtered benchmark rows.",
+      "uses_updates": true,
+      "uses_reward": false
+    },
+    {
+      "experiment_id": "samsum__best_of_n",
+      "dataset": "samsum",
+      "method": "best_of_n",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/samsum_3000.jsonl",
+      "total_rows": 3000,
+      "usable_rows": 3000,
+      "dropped_rows": 0,
+      "required_fields": [
+        "dialogue",
+        "summary"
+      ],
+      "notes": "Keep only rows with non-empty dialogues and reference summaries.",
+      "objective": "Inference-time sampling with verifier- or reward-based reranking.",
+      "uses_updates": false,
+      "uses_reward": true
+    },
+    {
+      "experiment_id": "samsum__grpo",
+      "dataset": "samsum",
+      "method": "grpo",
+      "supported": true,
+      "source_path": "/home/nikhil/bench/OSS-datasets/samsum_3000.jsonl",
+      "total_rows": 3000,
+      "usable_rows": 3000,
+      "dropped_rows": 0,
+      "required_fields": [
+        "dialogue",
+        "summary"
+      ],
+      "notes": "Keep only rows with non-empty dialogues and reference summaries.",
+      "objective": "Group Relative Policy Optimization with verifier- or reward-scored samples.",
+      "uses_updates": true,
+      "uses_reward": true
+    }
+  ]
+}
