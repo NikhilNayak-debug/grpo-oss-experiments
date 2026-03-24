@@ -76,6 +76,42 @@ def defaults_cmd() -> int:
     return 0
 
 
+def summarize_results_cmd(root: str, datasets: list[str] | None) -> int:
+    results_root = Path(root)
+    rows = []
+    for path in sorted(results_root.glob("*.json")):
+        obj = json.loads(path.read_text())
+        dataset = obj.get("dataset")
+        if datasets and dataset not in datasets:
+            continue
+        rows.append(
+            {
+                "dataset": dataset,
+                "method": obj.get("method"),
+                "split": obj.get("split"),
+                "num_examples": obj.get("num_examples"),
+                "average_reward": obj.get("average_reward"),
+                "file": path.name,
+            }
+        )
+
+    grouped: dict[str, list[dict[str, object]]] = {}
+    for row in rows:
+        grouped.setdefault(str(row["dataset"]), []).append(row)
+
+    summary = []
+    for dataset, items in grouped.items():
+        prompt_row = next((item for item in items if item["method"] == "prompt"), None)
+        prompt_reward = float(prompt_row["average_reward"]) if prompt_row is not None else None
+        for item in items:
+            delta = None
+            if prompt_reward is not None and item["average_reward"] is not None:
+                delta = float(item["average_reward"]) - prompt_reward
+            summary.append({**item, "delta_vs_prompt": delta})
+    print(json.dumps({"results": summary}, indent=2))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="OSS benchmark experiment helper.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -83,6 +119,9 @@ def main() -> int:
     subparsers.add_parser("inspect-datasets", help="Show dataset health and usable counts.")
     subparsers.add_parser("inspect-support", help="Show which methods are supported by local data.")
     subparsers.add_parser("show-defaults", help="Show the default model and trainer settings.")
+    summarize = subparsers.add_parser("summarize-results", help="Summarize completed result JSON files.")
+    summarize.add_argument("--root", default="results")
+    summarize.add_argument("--datasets", nargs="*")
 
     build_manifest = subparsers.add_parser(
         "build-manifest",
@@ -112,6 +151,8 @@ def main() -> int:
         return inspect_support_cmd()
     if args.command == "show-defaults":
         return defaults_cmd()
+    if args.command == "summarize-results":
+        return summarize_results_cmd(args.root, args.datasets)
     if args.command == "train":
         return train_cmd(args.method, args.dataset, args.output_dir, args.model)
     if args.command == "eval":

@@ -24,6 +24,10 @@ SYSTEM_PROMPTS = {
         "You are a concise summarization assistant. Write a faithful summary "
         "of the dialogue without adding facts."
     ),
+    DatasetName.GSM8K: (
+        "You are a careful math reasoning assistant. Solve the problem and "
+        "end with a clear final answer."
+    ),
 }
 
 
@@ -47,6 +51,8 @@ def prompt_text(record: DatasetRecord) -> str:
         return record.payload["prompt"]
     if dataset is DatasetName.SAMSUM:
         return record.payload["dialogue"]
+    if dataset is DatasetName.GSM8K:
+        return str(record.payload["question"])
     return record.payload["goal"]
 
 
@@ -59,6 +65,8 @@ def sft_target_text(record: DatasetRecord) -> str:
         return str(ground_truth)
     if dataset is DatasetName.SAMSUM:
         return str(record.payload["summary"])
+    if dataset is DatasetName.GSM8K:
+        return str(record.payload["answer"])
     raise ValueError(f"SFT targets are not available for dataset={dataset.value}")
 
 

@@ -21,6 +21,7 @@ class DatasetRecord:
 class DatasetReport:
     dataset: str
     path: str
+    exists: bool
     total_rows: int
     kept_rows: int
     dropped_rows: int
@@ -40,6 +41,8 @@ def _is_empty(value: Any) -> bool:
 def _row_id(name: DatasetName, index: int, obj: dict[str, Any]) -> str:
     if name is DatasetName.IFEVAL:
         return f"{name.value}:{obj.get('key', index)}"
+    if name is DatasetName.GSM8K:
+        return f"{name.value}:{obj.get('id', index)}"
     return f"{name.value}:{index}"
 
 
@@ -51,6 +54,11 @@ def _normalize_prompt(name: DatasetName, obj: dict[str, Any], input_field: str) 
 
 
 def _iter_jsonl(path: Path) -> Iterable[dict[str, Any]]:
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Dataset file not found: {path}. "
+            "If you are adding GSM8K, prepare it first with scripts/prepare_gsm8k.py."
+        )
     with path.open("r", encoding="utf-8") as handle:
         for line in handle:
             yield json.loads(line)
@@ -78,6 +86,16 @@ def load_dataset(name: str | DatasetName) -> list[DatasetRecord]:
 def dataset_report(name: str | DatasetName) -> DatasetReport:
     dataset_name = DatasetName(name)
     spec = DATASET_SPECS[dataset_name]
+    if not spec.path.exists():
+        return DatasetReport(
+            dataset=dataset_name.value,
+            path=str(spec.path),
+            exists=False,
+            total_rows=0,
+            kept_rows=0,
+            dropped_rows=0,
+            required_fields=spec.required_fields,
+        )
     total_rows = 0
     kept_rows = 0
     for obj in _iter_jsonl(spec.path):
@@ -88,6 +106,7 @@ def dataset_report(name: str | DatasetName) -> DatasetReport:
     return DatasetReport(
         dataset=dataset_name.value,
         path=str(spec.path),
+        exists=True,
         total_rows=total_rows,
         kept_rows=kept_rows,
         dropped_rows=total_rows - kept_rows,

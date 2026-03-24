@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -17,6 +18,7 @@ class DatasetName(StrEnum):
     IFEVAL = "ifeval"
     JAILBREAKBENCH = "jailbreakbench"
     SAMSUM = "samsum"
+    GSM8K = "gsm8k"
 
 
 @dataclass(frozen=True)
@@ -37,10 +39,15 @@ class MethodSpec:
     uses_reward: bool
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+BENCH_OSS_ROOT = Path(os.environ.get("GRPO_OSS_BENCH_ROOT", "/home/nikhil/bench/OSS-datasets"))
+LOCAL_DATA_ROOT = Path(os.environ.get("GRPO_OSS_DATA_ROOT", str(REPO_ROOT / "data")))
+
+
 DATASET_SPECS: dict[DatasetName, DatasetSpec] = {
     DatasetName.BFCL: DatasetSpec(
         name=DatasetName.BFCL,
-        path=Path("/home/nikhil/bench/OSS-datasets/bfcl_3000.jsonl"),
+        path=BENCH_OSS_ROOT / "bfcl_3000.jsonl",
         required_fields=("function", "ground_truth"),
         primary_input_field="question",
         notes="Keep only rows with non-empty function schemas and ground-truth calls.",
@@ -53,7 +60,7 @@ DATASET_SPECS: dict[DatasetName, DatasetSpec] = {
     ),
     DatasetName.IFEVAL: DatasetSpec(
         name=DatasetName.IFEVAL,
-        path=Path("/home/nikhil/bench/OSS-datasets/ifeval_samples.jsonl"),
+        path=BENCH_OSS_ROOT / "ifeval_samples.jsonl",
         required_fields=("prompt",),
         primary_input_field="prompt",
         notes="Keep only rows with non-empty prompts. SFT is unsupported from this local file because there are no reference completions.",
@@ -65,7 +72,7 @@ DATASET_SPECS: dict[DatasetName, DatasetSpec] = {
     ),
     DatasetName.JAILBREAKBENCH: DatasetSpec(
         name=DatasetName.JAILBREAKBENCH,
-        path=Path("/home/nikhil/bench/OSS-datasets/jailbreakbench_samples.jsonl"),
+        path=BENCH_OSS_ROOT / "jailbreakbench_samples.jsonl",
         required_fields=("goal", "target"),
         primary_input_field="goal",
         notes="Keep only rows with non-empty attack goals and unsafe target strings. SFT is unsupported because the provided targets are harmful exemplars, not desired safe responses.",
@@ -77,10 +84,23 @@ DATASET_SPECS: dict[DatasetName, DatasetSpec] = {
     ),
     DatasetName.SAMSUM: DatasetSpec(
         name=DatasetName.SAMSUM,
-        path=Path("/home/nikhil/bench/OSS-datasets/samsum_3000.jsonl"),
+        path=BENCH_OSS_ROOT / "samsum_3000.jsonl",
         required_fields=("dialogue", "summary"),
         primary_input_field="dialogue",
         notes="Keep only rows with non-empty dialogues and reference summaries.",
+        supported_methods=(
+            Method.PROMPT,
+            Method.SFT,
+            Method.BEST_OF_N,
+            Method.GRPO,
+        ),
+    ),
+    DatasetName.GSM8K: DatasetSpec(
+        name=DatasetName.GSM8K,
+        path=LOCAL_DATA_ROOT / "gsm8k_main.jsonl",
+        required_fields=("question", "answer"),
+        primary_input_field="question",
+        notes="Keep only rows with non-empty questions and reference answers. Scoring uses strict extracted final-answer exact match.",
         supported_methods=(
             Method.PROMPT,
             Method.SFT,

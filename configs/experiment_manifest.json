@@ -283,6 +283,78 @@
       "objective": "Group Relative Policy Optimization with verifier- or reward-scored samples.",
       "uses_updates": true,
       "uses_reward": true
+    },
+    {
+      "experiment_id": "gsm8k__prompt",
+      "dataset": "gsm8k",
+      "method": "prompt",
+      "supported": true,
+      "source_path": "/tmp/grpo-oss-experiments/data/gsm8k_main.jsonl",
+      "total_rows": 0,
+      "usable_rows": 0,
+      "dropped_rows": 0,
+      "required_fields": [
+        "question",
+        "answer"
+      ],
+      "notes": "Keep only rows with non-empty questions and reference answers. Scoring uses strict extracted final-answer exact match.",
+      "objective": "Prompt-only baseline with no parameter updates.",
+      "uses_updates": false,
+      "uses_reward": false
+    },
+    {
+      "experiment_id": "gsm8k__sft",
+      "dataset": "gsm8k",
+      "method": "sft",
+      "supported": true,
+      "source_path": "/tmp/grpo-oss-experiments/data/gsm8k_main.jsonl",
+      "total_rows": 0,
+      "usable_rows": 0,
+      "dropped_rows": 0,
+      "required_fields": [
+        "question",
+        "answer"
+      ],
+      "notes": "Keep only rows with non-empty questions and reference answers. Scoring uses strict extracted final-answer exact match.",
+      "objective": "Supervised fine-tuning on filtered benchmark rows.",
+      "uses_updates": true,
+      "uses_reward": false
+    },
+    {
+      "experiment_id": "gsm8k__best_of_n",
+      "dataset": "gsm8k",
+      "method": "best_of_n",
+      "supported": true,
+      "source_path": "/tmp/grpo-oss-experiments/data/gsm8k_main.jsonl",
+      "total_rows": 0,
+      "usable_rows": 0,
+      "dropped_rows": 0,
+      "required_fields": [
+        "question",
+        "answer"
+      ],
+      "notes": "Keep only rows with non-empty questions and reference answers. Scoring uses strict extracted final-answer exact match.",
+      "objective": "Inference-time sampling with verifier- or reward-based reranking.",
+      "uses_updates": false,
+      "uses_reward": true
+    },
+    {
+      "experiment_id": "gsm8k__grpo",
+      "dataset": "gsm8k",
+      "method": "grpo",
+      "supported": true,
+      "source_path": "/tmp/grpo-oss-experiments/data/gsm8k_main.jsonl",
+      "total_rows": 0,
+      "usable_rows": 0,
+      "dropped_rows": 0,
+      "required_fields": [
+        "question",
+        "answer"
+      ],
+      "notes": "Keep only rows with non-empty questions and reference answers. Scoring uses strict extracted final-answer exact match.",
+      "objective": "Group Relative Policy Optimization with verifier- or reward-scored samples.",
+      "uses_updates": true,
+      "uses_reward": true
     }
   ]
 }

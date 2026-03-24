@@ -1,51 +1,53 @@
 # GRPO OSS Experiments
 
-Small TRL-based experiment repo for comparing four methods on four open benchmark subsets:
+Small TRL-based experiment repo for comparing four methods on verifier-heavy benchmarks:
 
 - `prompt`
 - `sft`
 - `best_of_n`
 - `grpo`
 
-Benchmarks included:
+Current focus:
 
-- `bfcl`
 - `ifeval`
-- `jailbreakbench`
-- `samsum`
+- `gsm8k`
 
 ## Overview
 
 This repo currently provides:
 
-- dataset adapters for four OSS benchmarks
+- dataset adapters for the current benchmark set plus prior OSS experiments
 - strict filtering of rows with missing or empty task-critical fields
 - a generated experiment matrix for all `dataset x method` combinations
 - TRL-facing training and evaluation entrypoints
 - runnable CLI commands for training and evaluation with a Qwen3 4B default
-- a small CLI to inspect dataset health and emit the matrix manifest
+- a small CLI to inspect dataset health, emit the matrix manifest, and summarize completed runs
 
 It does not include a full distributed training or serving stack. The goal is to keep the training and evaluation flow lightweight and easy to modify.
 
 ## Data
 
-The current code expects local JSONL files from a companion `bench` workspace. The source paths are defined in [`src/experiments/tasks.py`](src/experiments/tasks.py). If your benchmark files live somewhere else, update those paths before running training or evaluation.
+The current code expects:
+
+- local OSS benchmark JSONL files from a companion `bench` workspace for legacy datasets
+- a local `gsm8k_main.jsonl` file under `data/` for GSM8K
+
+Dataset roots are configured in [`src/experiments/tasks.py`](src/experiments/tasks.py) and can be overridden with:
+
+- `GRPO_OSS_BENCH_ROOT` for local OSS benchmark files
+- `GRPO_OSS_DATA_ROOT` for repo-local prepared data such as `gsm8k_main.jsonl`
 
 ## Dataset filtering policy
 
 Any row with missing or empty task-critical fields is dropped at load time.
 
-- `bfcl`: requires non-empty `function`
 - `ifeval`: requires non-empty `prompt`
-- `jailbreakbench`: requires non-empty `goal` and `target`
-- `samsum`: requires non-empty `dialogue` and `summary`
+- `gsm8k`: requires non-empty `question` and `answer`
 
 With the local files currently referenced by the repo, the usable counts are:
 
-- `bfcl`: `240 / 3000` for rows with both non-empty `function` and non-empty `ground_truth`
 - `ifeval`: `541 / 541`
-- `jailbreakbench`: `200 / 200`
-- `samsum`: `3000 / 3000`
+- `gsm8k`: created locally after running the prep script
 
 ## Quick Start
 
@@ -58,15 +60,11 @@ python -m experiments.cli show-defaults
 python -m experiments.cli build-manifest --out configs/experiment_manifest.json
 ```
 
-Train `SFT` on `SAMSum`:
+Prepare `GSM8K`:
 
 ```bash
 cd grpo-oss-experiments
-python -m experiments.cli train \
-  --method sft \
-  --dataset samsum \
-  --model Qwen/Qwen3-4B-Instruct-2507 \
-  --output-dir results/samsum-sft
+python scripts/prepare_gsm8k.py
 ```
 
 Train `GRPO` on `IFEval`:
@@ -80,16 +78,35 @@ python -m experiments.cli train \
   --output-dir results/ifeval-grpo
 ```
 
-Evaluate `best_of_n` on `BFCL`:
+Train `SFT` on `GSM8K`:
+
+```bash
+cd grpo-oss-experiments
+python -m experiments.cli train \
+  --method sft \
+  --dataset gsm8k \
+  --model Qwen/Qwen3-4B-Instruct-2507 \
+  --output-dir results/gsm8k-sft
+```
+
+Evaluate `best_of_n` on `GSM8K`:
 
 ```bash
 cd grpo-oss-experiments
 python -m experiments.cli eval \
-  --dataset bfcl \
+  --dataset gsm8k \
   --method best_of_n \
   --base-model Qwen/Qwen3-4B-Instruct-2507 \
   --split test \
-  --output-path results/bfcl-best-of-n-test.json
+  --output-path results/gsm8k-best_of_n-test.json
+```
+
+Run the focused benchmark suites:
+
+```bash
+cd grpo-oss-experiments
+bash scripts/run_ifeval_suite.sh
+bash scripts/run_gsm8k_suite.sh
 ```
 
 ## Methods
@@ -109,15 +126,12 @@ python -m experiments.cli eval \
 
 ## Dataset Support
 
-- `bfcl`: supports `prompt`, `sft`, `best_of_n`, `grpo`
 - `ifeval`: supports `prompt`, `best_of_n`, `grpo`
-- `jailbreakbench`: supports `prompt`, `best_of_n`, `grpo`
-- `samsum`: supports `prompt`, `sft`, `best_of_n`, `grpo`
+- `gsm8k`: supports `prompt`, `sft`, `best_of_n`, `grpo`
 
 Why `SFT` is limited:
 
 - `IFEval` has prompts and constraint metadata but no reference completions.
-- `JailbreakBench` has harmful target completions, which are not suitable as safe SFT targets.
 
 ## Runtime Entry Points
 
@@ -133,12 +147,10 @@ Lower-level helper functions also exist in [`src/experiments/trl_recipes.py`](sr
 - `build_trl_sft_trainer(...)`
 - `build_trl_grpo_trainer(...)`
 
-The GRPO reward functions are heuristic and dataset-specific:
+The current reward functions are dataset-specific:
 
-- `BFCL`: exact or near-exact match against `ground_truth`
-- `IFEval`: constraint checks for a supported subset of instruction types
-- `JailbreakBench`: refusal-oriented heuristic reward
-- `SAMSum`: overlap-style reward against the reference summary
+- `IFEval`: deterministic constraint checks over the 25 instruction types present in the local file, with per-example support coverage
+- `GSM8K`: strict extracted final-answer exact match
 
 These reward functions are enough to start experiments, but not enough for a publication-quality benchmark without stronger verifiers.
 
@@ -147,12 +159,12 @@ These reward functions are enough to start experiments, but not enough for a pub
 - base model: `Qwen/Qwen3-4B-Instruct-2507`
 - adaptation: LoRA via `peft`
 - dataset splits: deterministic hash split, `80/10/10`
-- `SFT`: used only on datasets with reference targets (`BFCL`, `SAMSum`)
+- `SFT`: used only on datasets with reference targets (`GSM8K`)
 - `GRPO`: online policy optimization with dataset-specific reward functions
 
 ## Limitations
 
-- The benchmark file locations are currently hard-coded in [`src/experiments/tasks.py`](src/experiments/tasks.py).
-- `BFCL` is small under the current strict filter because many local rows are missing `ground_truth`.
-- `IFEval`, `JailbreakBench`, and `SAMSum` use heuristic rewards rather than official benchmark evaluators.
+- The current setup assumes local benchmark files already exist; `GSM8K` still requires a one-time preparation step.
+- `IFEval` verification is deterministic and auditable, but it is still a repo-local implementation rather than an official benchmark evaluator.
+- `GSM8K` scoring is strict final-answer match and does not separately reward reasoning quality.
 - The repo has been smoke-tested for imports and data flow, but it has not yet been validated with a full end-to-end training run in this workspace.
